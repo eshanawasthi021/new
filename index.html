@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paver Block Mix Design Generator</title>
+    <title>Paver Block Mix Design & Cost Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -20,7 +20,6 @@
                 height: 350px;
             }
         }
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
@@ -37,9 +36,9 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#2563eb', // blue-600
-                        secondary: '#1e293b', // slate-800
-                        accent: '#f59e0b', // amber-500
+                        primary: '#2563eb',
+                        secondary: '#1e293b',
+                        accent: '#f59e0b',
                     }
                 }
             }
@@ -47,15 +46,6 @@
     </script>
 </head>
 <body class="text-slate-800 font-sans antialiased overflow-x-hidden">
-
-    <!-- Chosen Palette: Professional Engineering (Slate-800 for sidebars/structure, Blue-600 for primary actions/charts, White/Gray-50 for clean data presentation). -->
-    <!-- Application Structure Plan: A dynamic, calculator-style dashboard. The left sidebar serves as the primary control for selecting the concrete grade. The main view displays the selected grade's specifications, an interactive volume scaler, distinct cards for each material's required weight, and visual charts. This layout allows for rapid comparison between grades and immediate calculation for production batches without reloading or scrolling through a lengthy document. -->
-    <!-- Visualization & Content Choices: 
-         1. Material Breakdown -> Goal: Show weight distribution -> Viz: Doughnut Chart (Chart.js) -> Interaction: Hover for percentages, dynamic update on grade change -> Library: Chart.js
-         2. Strength Progression -> Goal: Verify curing performance -> Viz: Bar Chart (Chart.js) -> Interaction: Dynamic update showing 3/7/28 day curves per grade -> Library: Chart.js
-         3. Batch Scaler -> Goal: Practical utility for production -> Viz: Range Slider + Live Text -> Interaction: Sliding updates material weights instantly in the UI -> HTML/Vanilla JS
-         CONFIRMING: NO SVG used. NO Mermaid used. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
     <div class="flex flex-col md:flex-row min-h-screen">
         
@@ -93,7 +83,6 @@
                     <p class="text-slate-500 mt-2 max-w-2xl">High-strength zero-slump mix optimized for heavy-duty interlocking concrete paver blocks. Data is approximate and based on standard IS 10262 parameters.</p>
                 </div>
                 
-                <!-- Key Metrics Cards -->
                 <div class="flex gap-4 w-full lg:w-auto">
                     <div class="glass-card p-4 rounded-xl text-center flex-1 lg:flex-none lg:w-32">
                         <div class="text-xs text-slate-500 font-semibold uppercase">Target Mean</div>
@@ -136,6 +125,53 @@
                 <!-- Cards injected via JS -->
             </div>
 
+            <!-- NEW: Economic Cost Estimator -->
+            <section class="glass-card rounded-2xl mb-8 overflow-hidden shadow-sm border border-slate-200">
+                <div class="bg-emerald-800 p-4 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span class="text-emerald-400">&#8377;</span> Production Cost Estimator
+                    </h3>
+                </div>
+                <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Material Rates (₹ / kg)</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs text-slate-500 font-bold">Cement</label>
+                                <input type="number" id="rate-cement" value="7.0" step="0.1" class="w-full mt-1 p-2 border border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 outline-none rate-input text-slate-800 font-semibold">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500 font-bold">Fine Agg. (Sand)</label>
+                                <input type="number" id="rate-fineAgg" value="1.2" step="0.1" class="w-full mt-1 p-2 border border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 outline-none rate-input text-slate-800 font-semibold">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500 font-bold">Coarse Agg. (10mm)</label>
+                                <input type="number" id="rate-coarseAgg" value="0.9" step="0.1" class="w-full mt-1 p-2 border border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 outline-none rate-input text-slate-800 font-semibold">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500 font-bold">Admixture (SP)</label>
+                                <input type="number" id="rate-admix" value="55.0" step="1" class="w-full mt-1 p-2 border border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 outline-none rate-input text-slate-800 font-semibold">
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-3 italic">* Water cost is considered negligible for this estimation.</p>
+                    </div>
+                    <div class="bg-emerald-50 rounded-xl p-6 border border-emerald-100 flex flex-col justify-center">
+                        <div class="text-sm font-bold text-emerald-800 uppercase mb-1">Estimated Batch Cost</div>
+                        <div class="text-4xl md:text-5xl font-black text-emerald-900" id="total-cost-display">₹ 0</div>
+                        <div class="flex gap-4 mt-4">
+                            <div class="bg-white px-3 py-2 rounded shadow-sm border border-emerald-100 flex-1">
+                                <div class="text-xs text-slate-500">Cost per m³</div>
+                                <div class="text-lg font-bold text-slate-800" id="cost-per-m3-display">₹ 0</div>
+                            </div>
+                            <div class="bg-white px-3 py-2 rounded shadow-sm border border-emerald-100 flex-1">
+                                <div class="text-xs text-slate-500">Est. Pavers Yield</div>
+                                <div class="text-lg font-bold text-slate-800" id="paver-yield-display">~0 blocks</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Modern Manufacturing & Curing Practices -->
             <section class="glass-card rounded-2xl mb-8 overflow-hidden shadow-sm border border-slate-200">
                 <div class="bg-slate-800 p-4">
@@ -147,19 +183,19 @@
                     <div class="border-l-4 border-blue-500 pl-4">
                         <div class="text-sm font-bold text-slate-800 uppercase tracking-wide mb-1">1. The Role of Admixtures</div>
                         <p class="text-sm text-slate-600 leading-relaxed">
-                            Plasticizers allow the mix to flow into the molds and compact densely under vibration with very little water. However, they <strong>do not create the chemical reaction</strong> (hydration) that gives cement its strength. Water is still required for that.
+                            Plasticizers allow the mix to flow into molds and compact densely with very little water. However, they <strong>do not create the chemical reaction</strong> (hydration) that gives cement its strength. Water is still required for that.
                         </p>
                     </div>
                     <div class="border-l-4 border-amber-500 pl-4">
                         <div class="text-sm font-bold text-slate-800 uppercase tracking-wide mb-1">2. Why Traditional Curing is Rare</div>
                         <p class="text-sm text-slate-600 leading-relaxed">
-                            Because production speed is high, submerging thousands of blocks in water tanks or constantly spraying them is impractical and can wash away the fine surface cement before it fully sets.
+                            Because production speed is high, submerging blocks in water tanks or spraying them is impractical and can wash away the fine surface cement before it fully sets.
                         </p>
                     </div>
                     <div class="border-l-4 border-green-500 pl-4">
-                        <div class="text-sm font-bold text-slate-800 uppercase tracking-wide mb-1">3. The "No-Water" Curing Solution</div>
+                        <div class="text-sm font-bold text-slate-800 uppercase tracking-wide mb-1">3. "Moisture Retention" Curing</div>
                         <p class="text-sm text-slate-600 leading-relaxed">
-                            Instead of adding water, factories use <strong>Moisture Retention</strong>. Freshly demolded pallets are placed in humid chambers for 24 hours, then tightly wrapped in <strong>polythene plastic sheets</strong> for 7 to 14 days. This traps the existing moisture inside, allowing hydration to finish without external watering.
+                            Instead of adding water, factories use <strong>Moisture Retention</strong>. Fresh pallets are tightly wrapped in <strong>polythene plastic sheets</strong> for 7 to 14 days. This traps existing moisture inside, allowing hydration to finish perfectly.
                         </p>
                     </div>
                 </div>
@@ -187,7 +223,7 @@
             </div>
 
             <footer class="text-center text-sm text-slate-400 pt-8 pb-4 border-t border-slate-200">
-                <p>Disclaimer: This is a theoretical model for demonstration. Actual mix designs must undergo laboratory trial batches and physical testing per standard codes.</p>
+                <p>Disclaimer: This is a theoretical model. Actual mix designs must undergo laboratory trial batches and physical testing per standard codes.</p>
             </footer>
 
         </main>
@@ -196,7 +232,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
-            // --- Data Database (Standardized approx values per 1 m3 for Zero-Slump Pavers) ---
+            // --- Data Database ---
             const database = {
                 'M25': {
                     targetStrength: 31.6, wc: 0.45,
@@ -207,7 +243,7 @@
                         coarseAgg: { name: 'Coarse Agg. (10mm)', baseWeight: 1180, unit: 'kg', icon: '&#9696;', color: '#334155' },
                         admix: { name: 'Superplasticizer', baseWeight: 3.4, unit: 'kg', icon: '&#9731;', color: '#10b981' }
                     },
-                    strengthData: [16.0, 22.5, 32.0] // 3, 7, 28 days
+                    strengthData: [16.0, 22.5, 32.0]
                 },
                 'M30': {
                     targetStrength: 38.25, wc: 0.42,
@@ -259,6 +295,7 @@
             let currentGrade = 'M35';
             let currentVolume = 1.0;
             const grades = Object.keys(database);
+            const standardPaverVolumeM3 = 0.003; // Approx volume of 200x100x60mm paver (plus wastage)
 
             // --- DOM Elements ---
             const selectorsContainer = document.getElementById('grade-selectors');
@@ -270,6 +307,12 @@
             const volumeDisplay = document.getElementById('volume-display');
             const totalWeightDisplay = document.getElementById('total-weight-display');
             const materialCardsContainer = document.getElementById('material-cards');
+            
+            // Cost DOM
+            const displayTotalCost = document.getElementById('total-cost-display');
+            const displayCostPerM3 = document.getElementById('cost-per-m3-display');
+            const displayPaverYield = document.getElementById('paver-yield-display');
+            const rateInputs = document.querySelectorAll('.rate-input');
 
             // --- Chart Instances ---
             let compChart, strChart;
@@ -285,6 +328,10 @@
                     volumeDisplay.innerHTML = `${currentVolume.toFixed(1)} <span class="text-sm font-normal text-slate-500">m&sup3;</span>`;
                     updateMaterialCalculations();
                 });
+
+                rateInputs.forEach(input => {
+                    input.addEventListener('input', calculateCosts);
+                });
             }
 
             // --- Build Sidebar Buttons ---
@@ -296,7 +343,7 @@
                     btn.innerHTML = `<span class="inline-block w-8">${grade}</span> <span class="text-xs font-normal opacity-70 ml-2">Paver Mix</span>`;
                     btn.onclick = () => {
                         currentGrade = grade;
-                        buildSidebar(); // Re-render to update active state
+                        buildSidebar();
                         updateUI();
                     };
                     selectorsContainer.appendChild(btn);
@@ -306,8 +353,6 @@
             // --- Update Entire UI based on Grade ---
             function updateUI() {
                 const data = database[currentGrade];
-                
-                // Update Headers
                 gradeBadge.textContent = `Grade ${currentGrade}`;
                 gradeTitle.textContent = `${currentGrade} Mix Design`;
                 metricTarget.textContent = data.targetStrength.toFixed(1);
@@ -317,7 +362,7 @@
                 updateCharts(data);
             }
 
-            // --- Calculate and Render Material Cards ---
+            // --- Calculate Materials and Costs ---
             function updateMaterialCalculations() {
                 const data = database[currentGrade];
                 materialCardsContainer.innerHTML = '';
@@ -339,102 +384,82 @@
                 });
 
                 totalWeightDisplay.innerHTML = `${Math.round(totalWeight)} <span class="text-sm font-medium">kg</span>`;
+                calculateCosts(); // Recalculate costs whenever materials change
+            }
+
+            // --- Cost Calculation Logic ---
+            function calculateCosts() {
+                const data = database[currentGrade];
+                
+                // Get rates
+                const rCement = parseFloat(document.getElementById('rate-cement').value) || 0;
+                const rFineAgg = parseFloat(document.getElementById('rate-fineAgg').value) || 0;
+                const rCoarseAgg = parseFloat(document.getElementById('rate-coarseAgg').value) || 0;
+                const rAdmix = parseFloat(document.getElementById('rate-admix').value) || 0;
+
+                // Calculate base cost per m3
+                const costPerM3 = 
+                    (data.materials.cement.baseWeight * rCement) +
+                    (data.materials.fineAgg.baseWeight * rFineAgg) +
+                    (data.materials.coarseAgg.baseWeight * rCoarseAgg) +
+                    (data.materials.admix.baseWeight * rAdmix);
+
+                const totalBatchCost = costPerM3 * currentVolume;
+                const estimatedPavers = Math.floor(currentVolume / standardPaverVolumeM3);
+
+                // Format currency
+                const formatter = new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    maximumFractionDigits: 0
+                });
+
+                displayTotalCost.innerText = formatter.format(totalBatchCost);
+                displayCostPerM3.innerText = formatter.format(costPerM3);
+                displayPaverYield.innerText = `~${estimatedPavers.toLocaleString()} blocks`;
             }
 
             // --- Initialize Chart.js ---
             function initCharts() {
-                // Composition Doughnut Chart
                 const ctxComp = document.getElementById('compositionChart').getContext('2d');
                 compChart = new Chart(ctxComp, {
                     type: 'doughnut',
                     data: { labels: [], datasets: [] },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '65%',
-                        plugins: {
-                            legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: {size: 11} } },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return ` ${context.label}: ${context.raw} kg/m³`;
-                                    }
-                                }
-                            }
-                        }
+                        responsive: true, maintainAspectRatio: false, cutout: '65%',
+                        plugins: { legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: {size: 11} } } }
                     }
                 });
 
-                // Strength Bar Chart
                 const ctxStr = document.getElementById('strengthChart').getContext('2d');
                 strChart = new Chart(ctxStr, {
                     type: 'bar',
                     data: { labels: ['3 Days', '7 Days', '28 Days'], datasets: [] },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: { 
-                                beginAtZero: true, 
-                                title: { display: true, text: 'Compressive Strength (MPa)', font: {size: 10} },
-                                grid: { color: '#e2e8f0' }
-                            },
-                            x: { grid: { display: false } }
-                        },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return ` Strength: ${context.raw} MPa`;
-                                    }
-                                }
-                            }
-                        }
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, title: { display: true, text: 'Compressive Strength (MPa)' } }, x: { grid: { display: false } } },
+                        plugins: { legend: { display: false } }
                     }
                 });
             }
 
             // --- Update Chart Data ---
             function updateCharts(data) {
-                // Update Composition Data (Always show 1m3 base proportions for the chart)
                 const matKeys = Object.values(data.materials);
                 compChart.data = {
                     labels: matKeys.map(m => m.name),
-                    datasets: [{
-                        data: matKeys.map(m => m.baseWeight),
-                        backgroundColor: matKeys.map(m => m.color),
-                        borderWidth: 0,
-                        hoverOffset: 5
-                    }]
+                    datasets: [{ data: matKeys.map(m => m.baseWeight), backgroundColor: matKeys.map(m => m.color), borderWidth: 0 }]
                 };
                 compChart.update();
 
-                // Update Strength Data
                 strChart.data.datasets = [{
-                    label: 'Achieved Strength',
-                    data: data.strengthData,
-                    backgroundColor: ['#93c5fd', '#60a5fa', '#2563eb'], // Light to dark blue progression
-                    borderRadius: 6,
-                    barPercentage: 0.6
+                    label: 'Achieved Strength', data: data.strengthData, backgroundColor: ['#93c5fd', '#60a5fa', '#2563eb'], borderRadius: 6, barPercentage: 0.6
+                }, {
+                    label: 'Target Mean Strength', data: [data.targetStrength, data.targetStrength, data.targetStrength], type: 'line', borderColor: '#f59e0b', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false
                 }];
-                
-                // Add target line annotation natively via second dataset
-                strChart.data.datasets.push({
-                    label: 'Target Mean Strength',
-                    data: [data.targetStrength, data.targetStrength, data.targetStrength],
-                    type: 'line',
-                    borderColor: '#f59e0b', // Amber line
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    pointRadius: 0,
-                    fill: false
-                });
-
                 strChart.update();
             }
 
-            // Start App
             init();
         });
     </script>
